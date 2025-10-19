@@ -9,19 +9,20 @@ import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
 @RequiredArgsConstructor
 @Component
-@PropertySource(value = "classpath:museum-missing-artifact-case/narrative.yml",
+@PropertySource(
+        value = "classpath:museum-missing-artifact-case/narrative.yml",
         factory = YamlPropertySourceFactory.class)
 @Slf4j
 public class MuseumStaff {
 
-    // When the MCP server starts it exposes Tools that will depend on the ChatClient hence having creating cyclic dependency.
+    // When the MCP server starts it exposes Tools that will depend on the ChatClient hence having creating cyclic
+    // dependency.
     private final ObjectProvider<ChatClient> chat;
 
     @Value("${personas.marco}")
@@ -57,7 +58,8 @@ public class MuseumStaff {
     public Flux<String> lenaAnswer(
             @ToolParam(description = "question or prompt") String question,
             @ToolParam(description = "conversation id") String conversationId) {
-        return chat.getObject()
+        return chat
+                .getObject()
                 .prompt()
                 .system(lenaPersona)
                 .user(question)
@@ -73,7 +75,8 @@ public class MuseumStaff {
     public Flux<String> vossAnswer(
             @ToolParam(description = "question or prompt") String question,
             @ToolParam(description = "conversation id") String conversationId) {
-        return chat.getObject()
+        return chat
+                .getObject()
                 .prompt()
                 .system(vossPersona)
                 .user(question)

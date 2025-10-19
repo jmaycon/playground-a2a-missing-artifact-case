@@ -8,7 +8,6 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.tool.ToolCallback;
@@ -16,8 +15,6 @@ import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -35,7 +32,9 @@ class ChatCli implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        Map<String, String> collect = locals.stream().collect(Collectors.toMap(k -> k.getToolDefinition().name(), v -> v.getToolDefinition().description()));
+        Map<String, String> collect = locals.stream()
+                .collect(Collectors.toMap(k -> k.getToolDefinition().name(), v -> v.getToolDefinition()
+                        .description()));
         var chat = this.chat.mutate().defaultTools(new Output()).build();
         try (var in = new BufferedReader(new InputStreamReader(System.in))) {
             System.out.println("CLI Chat. Type 'exit' to quit.");
@@ -44,14 +43,15 @@ class ChatCli implements CommandLineRunner {
                 var userPrompt = in.readLine();
                 if (userPrompt == null || "exit".equalsIgnoreCase(userPrompt.trim())) break;
 
-                final String sys = """
+                final String sys =
+                        """
                 # Objective
                 You are a specialized autonomous agent capable of performing any assigned task through a transparent
                 Conduct all reasoning and communication in a natural, human-readable way.
 
                 # Tools you must use
                 %s
-              
+
                 # Instructions
                 1. ALWAYS Announce your **initial hypothesis or plan** using `output_tool`.
                 3. Report intermediate results and their meaning using `output_tool`.
@@ -65,7 +65,8 @@ class ChatCli implements CommandLineRunner {
                 # Completion Rules
                 - If solved: %s
                 - If unsolved: %s
-              """.formatted(collect, CLOSED, UNSOLVED);
+              """
+                                .formatted(collect, CLOSED, UNSOLVED);
 
                 var start = Instant.now();
                 var deadline = start.plus(Duration.ofMinutes(3));
@@ -79,28 +80,29 @@ class ChatCli implements CommandLineRunner {
                     var remaining = Duration.between(Instant.now(), deadline);
                     if (!remaining.isNegative() && !remaining.isZero()) {
                         Flux<String> stream = (firstTurn
-                                ? chat.prompt().system(sys).user(userPrompt)
-                                : chat.prompt().user("continue"))
+                                        ? chat.prompt().system(sys).user(userPrompt)
+                                        : chat.prompt().user("continue"))
                                 .stream()
-                                .content()
-                                .doOnNext(chunk -> {
-                                    // stream live progress naturally (no JSON, no prefixes)
-                                    buffer.append(chunk);
-                                    events.publishEvent(new AiMessageEvent(this, chunk, false));
+                                        .content()
+                                        .doOnNext(chunk -> {
+                                            // stream live progress naturally (no JSON, no prefixes)
+                                            buffer.append(chunk);
+                                            events.publishEvent(new AiMessageEvent(this, chunk, false));
 
-                                    var s = buffer.toString();
-                                    if (s.contains(CLOSED) || s.contains(UNSOLVED)) {
-                                        turnDone.set(true);
-                                        finished.set(true);
-                                    }
-                                })
-                                .takeUntil(__ -> turnDone.get())
-                                .take(remaining)
-                                .doOnComplete(() -> events.publishEvent(new AiMessageEvent(this, "", true)))
-                                .onErrorResume(ex -> {
-                                    events.publishEvent(new AiMessageEvent(this, "[error] " + ex.getMessage(), true));
-                                    return Flux.empty();
-                                });
+                                            var s = buffer.toString();
+                                            if (s.contains(CLOSED) || s.contains(UNSOLVED)) {
+                                                turnDone.set(true);
+                                                finished.set(true);
+                                            }
+                                        })
+                                        .takeUntil(__ -> turnDone.get())
+                                        .take(remaining)
+                                        .doOnComplete(() -> events.publishEvent(new AiMessageEvent(this, "", true)))
+                                        .onErrorResume(ex -> {
+                                            events.publishEvent(
+                                                    new AiMessageEvent(this, "[error] " + ex.getMessage(), true));
+                                            return Flux.empty();
+                                        });
 
                         stream.blockLast();
                         firstTurn = false;
@@ -114,15 +116,14 @@ class ChatCli implements CommandLineRunner {
         }
     }
 
-    static class Output{
+    static class Output {
 
         @Tool(
                 name = "output_tool",
-                description = "Use this tool to communicate feedback or intermediate steps or responses you have obtained.")
-        public void marcoAnswer(
-                @ToolParam(description = "Text human readable") String text) {
+                description =
+                        "Use this tool to communicate feedback or intermediate steps or responses you have obtained.")
+        public void marcoAnswer(@ToolParam(description = "Text human readable") String text) {
             System.out.println(text);
         }
-
     }
 }

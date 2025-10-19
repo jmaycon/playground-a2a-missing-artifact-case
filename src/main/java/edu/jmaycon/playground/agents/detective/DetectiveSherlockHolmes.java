@@ -1,6 +1,5 @@
 package edu.jmaycon.playground.agents.detective;
 
-import io.modelcontextprotocol.client.McpClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -9,10 +8,8 @@ import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
 
 @Slf4j
 @Service
@@ -22,7 +19,8 @@ class DetectiveSherlockHolmes {
     @Value("museum-missing-artifact-case/sherlock-profile.md")
     private final ClassPathResource persona;
 
-    // When the MCP server starts it exposes Tools that will depend on the ChatClient hence having creating cyclic dependency.
+    // When the MCP server starts it exposes Tools that will depend on the ChatClient hence having creating cyclic
+    // dependency.
     private final ObjectProvider<ChatClient> chat;
 
     @Tool(
@@ -39,6 +37,7 @@ class DetectiveSherlockHolmes {
                 .system(persona)
                 .user(question)
                 .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
-                .call().content();
+                .call()
+                .content();
     }
 }

@@ -1,7 +1,9 @@
 package edu.jmaycon.playground.agents.detective;
 
-
 import io.swagger.v3.oas.annotations.Operation;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.definition.ToolDefinition;
@@ -9,10 +11,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -41,6 +39,4 @@ class McpToolController {
     public List<ToolDefinition> listTools() {
         return registry.specs();
     }
-
-
 }

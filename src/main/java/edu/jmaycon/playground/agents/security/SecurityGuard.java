@@ -1,11 +1,10 @@
 package edu.jmaycon.playground.agents.security;
 
+import edu.jmaycon.playground.YamlPropertySourceFactory;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import edu.jmaycon.playground.YamlPropertySourceFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -22,7 +21,8 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@PropertySource(value = "classpath:museum-missing-artifact-case/narrative.yml",
+@PropertySource(
+        value = "classpath:museum-missing-artifact-case/narrative.yml",
         factory = YamlPropertySourceFactory.class)
 class SecurityGuard {
 

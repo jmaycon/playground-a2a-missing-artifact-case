@@ -118,9 +118,8 @@ Access http://localhost:4444/
 Installation required for Claude desktop
 
 ```shell
- # Ensure pip can overwrite files
->> C:\Python312\python.exe -m pip install --upgrade pip setuptools wheel
->> C:\Python312\python.exe -m pip install --force-reinstall --upgrade mcp-contextforge-gateway
+python -m pip install --upgrade pip setuptools wheel
+python -m pip install --force-reinstall --upgrade mcp-contextforge-gateway
 ```
 
 ## See is deprecated see Streamable HTTP not implemented yet

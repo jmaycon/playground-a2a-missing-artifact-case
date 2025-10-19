@@ -4,7 +4,7 @@ Demonstrated multi-agent with distributed reasoning
 
 ## Starting
 
-Proxy & Otel
+Proxy, MCP Gateway, Otel
 
 ```shell
 docker compose up -d

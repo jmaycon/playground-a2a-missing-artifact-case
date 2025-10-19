@@ -1,0 +1,162 @@
+# application.yml (single file, multi-profile)
+
+# =========================
+# Common defaults (all agents)
+# =========================
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,mappings
+  endpoint:
+    health:
+      probes:
+        enabled: true
+spring:
+  ai:
+    ollama:
+      base-url: ${SPRING_AI_OLLAMA_BASEURL:http://localhost:11434}
+      chat:
+        options:
+          model: llama3.1:8b-instruct-q4_K_M
+          temperature: 0.2
+    web-application-type: reactive
+# =========================
+# Detective (Sherlock Holmes)
+# Activate with: --spring.profiles.active=agent.detective
+# =========================
+---
+server.port: 30010
+spring:
+  application.name: detective
+  config:
+    activate:
+      on-profile: detective
+  ai:
+    mcp:
+      server:
+        enabled: true
+        name: detective.sherlock
+        type: ASYNC           # reactive app
+        capabilities:
+          tool: true
+          resource: false
+        # (optional) sse endpoints; defaults shown for clarity
+        sse-endpoint: /sse
+        sse-message-endpoint: /mcp/message
+      client:
+        type: ASYNC
+        toolcallback.enabled: true       # expose remote tools to ChatClient
+        sse:
+          connections:
+            watson:
+              url: http://localhost:30011
+              sse-endpoint: /sse
+# =========================
+# Investigator (Dr. Watson)
+# Activate with: --spring.profiles.active=agent.investigator
+# =========================
+---
+server.port: 30011
+spring:
+  application.name: investigator
+  config:
+    activate:
+      on-profile: investigator
+  ai:
+    mcp:
+      server:
+        enabled: true
+        stdio: false
+        name: mcp-investigator-watson
+        type: ASYNC
+        sse-endpoint: /sse
+        sse-message-endpoint: /mcp/message
+        capabilities:
+          tool: true
+          resource: false
+# =========================
+# Museum Staff (Marco persona)
+# Activate with: --spring.profiles.active=agent.museum-staff
+# =========================
+---
+server.port: 30012
+spring:
+  application.name: museum-staff
+  config:
+    activate:
+      on-profile: museum-staff
+  ai:
+    mcp:
+      server:
+        enabled: true
+        name: museum.staff
+        type: ASYNC
+        capabilities:
+          tool: true
+          resource: false
+
+
+# =========================
+# Security System (Guard)
+# Activate with: --spring.profiles.active=agent.security
+# =========================
+---
+server.port: 30013
+spring:
+  application.name: security
+  config:
+    activate:
+      on-profile: security
+  ai:
+    mcp:
+      server:
+        enabled: true
+        name: security.system_guard
+        type: ASYNC
+        capabilities:
+          tool: true
+          resource: false
+
+# =========================
+# Chat-CLI (Coordinator/Application) Interaction Entry Point
+# Activate with: --spring.profiles.active=agent.security
+# =========================
+---
+spring:
+  application.name: chat-cli
+  config:
+    activate:
+      on-profile: chat-cli
+  main:
+    web-application-type: none
+  ai:
+    ollama:
+      base-url: ${SPRING_AI_OLLAMA_BASEURL:http://localhost:11434}
+      chat:
+        options:
+          model: llama3.1:8b-instruct-q4_K_M
+          temperature: 0.2
+    mcp:
+      server:
+        enabled: false
+      client:
+        type: ASYNC
+        tool-callback:
+          enabled: true       # expose remote tools to ChatClient
+        sse:
+          connections:
+            sherlock:
+              url: http://localhost:30010
+              sse-endpoint: /sse
+            watson:
+              url: http://localhost:30011
+              sse-endpoint: /sse
+            museum-staff:
+              url: http://localhost:30012
+              sse-endpoint: /sse
+            security:
+              url: http://localhost:30013
+              sse-endpoint: /sse

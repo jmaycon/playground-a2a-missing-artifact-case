@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.6</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>edu.jmaycon</groupId>
+    <artifactId>playground-a2a-missing-artifact-case</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>playground-ai-chat-cli</name>
+    <description>A playground to simulate AI distributed reasoning</description>
+    <properties>
+        <java.version>25</java.version>
+        <spring-ai.version>1.0.3</spring-ai.version>
+    </properties>
+
+    <dependencies>
+        <!-- Core Spring Boot -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-mcp-server-webflux</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-mcp-client-webflux</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+
+        <!-- Spring AI Ollama model + embeddings -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-model-ollama</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Tests -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring-ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!-- Force a single entry point -->
+                    <mainClass>edu.jmaycon.playground.coordinator.CoordinatorCli</mainClass>
+                    <!-- keep your excludes if you want, optional -->
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>detective-jar</id>
+                        <goals><goal>repackage</goal></goals>
+                        <configuration>
+                            <classifier>detective</classifier>
+                            <mainClass>edu.jmaycon.playground.agents.detective.DetectiveAgent</mainClass>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>investigator-jar</id>
+                        <goals><goal>repackage</goal></goals>
+                        <configuration>
+                            <classifier>investigator</classifier>
+                            <mainClass>edu.jmaycon.playground.agents.investigator.InvestigatorAgent</mainClass>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>security-jar</id>
+                        <goals><goal>repackage</goal></goals>
+                        <configuration>
+                            <classifier>security</classifier>
+                            <mainClass>edu.jmaycon.playground.agents.security.SecuritySystemAgent</mainClass>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>staff-jar</id>
+                        <goals><goal>repackage</goal></goals>
+                        <configuration>
+                            <classifier>staff</classifier>
+                            <mainClass>edu.jmaycon.playground.agents.museum.staff.MuseumStaffAgent</mainClass>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>format-on-validate</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>apply</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <java>
+                        <palantirJavaFormat>
+                            <version>2.77.0</version>
+                        </palantirJavaFormat>
+                        <removeUnusedImports/>
+                        <endWithNewline/>
+                        <trimTrailingWhitespace/>
+                    </java>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

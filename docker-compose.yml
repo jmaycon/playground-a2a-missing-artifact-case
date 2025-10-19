@@ -1,0 +1,49 @@
+services:
+  mcpgateway:
+    image: ghcr.io/ibm/mcp-context-forge:0.8.0
+    container_name: mcpgateway
+    ports:
+      - "4444:4444"
+    environment:
+      MCPGATEWAY_UI_ENABLED: "true"
+      MCPGATEWAY_ADMIN_API_ENABLED: "true"
+      HOST: "0.0.0.0"
+      JWT_SECRET_KEY: "my-test-key"
+      BASIC_AUTH_USER: "admin"
+      BASIC_AUTH_PASSWORD: "changeme"
+      AUTH_REQUIRED: "false"
+      PLATFORM_ADMIN_EMAIL: "admin@example.com"
+      PLATFORM_ADMIN_PASSWORD: "changeme"
+      PLATFORM_ADMIN_FULL_NAME: "Platform Administrator"
+      SECURE_COOKIES: "false"
+      COOKIE_SAMESITE: "lax"
+      ENVIRONMENT: "development"
+
+    # ---- mitmproxy as reverse proxy with Web UI ----
+  mitm:
+    image: mitmproxy/mitmproxy:latest
+    container_name: mitm
+    command: >
+      mitmweb
+      --mode reverse:http://host.docker.internal:30010
+      --listen-host 0.0.0.0
+      --listen-port 8080
+      --web-host 0.0.0.0
+      --web-port 8081
+      --set stream_large_bodies=1 
+      --set store_streamed_bodies=true
+      --set web_password=test
+    ports:
+      - "30001:8080"   # proxy endpoint
+      - "8081:8081"   # mitmweb UI
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # ---- Jaeger (all-in-one) ----
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
+    container_name: jaeger
+    ports:
+      - "16686:16686"   # Jaeger UI
+      - "4317:4317"     # OTLP gRPC
+      - "4318:4318"     # OTLP HTTP

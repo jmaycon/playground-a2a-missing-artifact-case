@@ -1,5 +1,0 @@
-servers:
-  - name: custom-server
-    description: Custom MCP server hosted locally
-    url: http://host.docker.internal:30010
-    version: 1.0.0
